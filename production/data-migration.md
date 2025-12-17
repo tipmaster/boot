@@ -11,13 +11,13 @@ Migration of database and file data from old server (/mnt/Data on sin) to produc
 | Data | Size | sin | fue | Notes |
 |------|------|:---:|:---:|-------|
 | **Phase 1** |
-| MariaDB | ~10GB | [ ] | [ ] | 10.5.22 → 11.4.9 |
-| tmdata | 7.7GB | [ ] | [ ] | Flat files |
+| MariaDB | ~10GB | [x] | [ ] | 9 databases migrated |
+| tmdata | 8.5GB | [x] | [ ] | Flat files |
 | ClickHouse | 528MB | [ ] | [ ] | 2 databases |
 | **Phase 2** |
 | MongoDB | 1.1GB | [ ] | [ ] | 6.x → 8.0 (version gap) |
-| SQLite | ~350MB | [ ] | [ ] | 4 databases |
-| Redis | config | [ ] | [ ] | Rebuild from scratch |
+| SQLite | ~350MB | [x] | [x] | 3 databases (strapi3, crawlanalyzer, knowledge-monitor) |
+| Redis | config | [x] | [x] | Configured from scratch |
 
 ---
 
@@ -29,15 +29,15 @@ Migration of database and file data from old server (/mnt/Data on sin) to produc
 
 | Database | Size | Status |
 |----------|------|--------|
-| gsc | 7.3GB | [ ] |
-| posthog | 1.1GB | [ ] |
-| forum | 747MB | [ ] |
-| strapi4 | 334MB | [ ] |
-| mbox | 203MB | [ ] |
-| sendy | 136MB | [ ] |
-| revive | 51MB | [ ] |
-| cloudflare | 49MB | [ ] |
-| searchdata | 12MB | [ ] |
+| gsc | 7.3GB | [x] Migrated |
+| posthog | 1.1GB | [x] Migrated |
+| forum | 747MB | [x] Migrated |
+| strapi4 | 334MB | [x] Migrated |
+| mbox | 203MB | [x] Migrated |
+| sendy | 136MB | [x] Migrated |
+| revive | 51MB | [x] Migrated |
+| cloudflare | 49MB | [x] Migrated |
+| searchdata | 12MB | [x] Migrated |
 | ~~strapi5~~ | 4.3MB | SKIP |
 
 **Migration approach:** mysqldump from old data, restore to running MariaDB 11.4.9
@@ -84,10 +84,11 @@ mysql -e "SELECT table_schema, COUNT(*) as tables FROM information_schema.tables
 
 ---
 
-### 2. tmdata (Flat Files)
+### 2. tmdata (Flat Files) ✅ COMPLETED on sin
 
-**Source:** `/mnt/Data/opt/tmdata/` (7.7GB)
+**Source:** `/mnt/Data/opt/tmdata/` (7.7GB → 8.5GB)
 **Target:** `/opt/tmdata/`
+**Migration completed:** 2025-12-17
 
 ```bash
 # On sin - rsync preserving permissions
@@ -98,14 +99,14 @@ sudo chown -R deploy:nginx /opt/tmdata/
 
 # Verify
 ls -la /opt/tmdata/
-du -sh /opt/tmdata/
+du -sh /opt/tmdata/  # 8.5G
 ```
 
-**Key files to verify:**
-- hashedPasswords.txt
-- blanko.txt
-- tmi/ directory
-- btm/ directory
+**Verified directories:**
+- tmi/ ✓
+- btm/ ✓
+- hashedPasswords.txt ✓
+- blanko.txt ✓
 
 ---
 
@@ -181,42 +182,47 @@ mongosh --eval "db.getSiblingDB('sportmonks').getCollectionNames()"
 
 ---
 
-### SQLite
+### SQLite ✅ COMPLETED
 
-| Source | Target |
-|--------|--------|
-| /mnt/Data/opt/strapi3/.tmp/data.db | /opt/strapi3/.tmp/data.db |
-| /mnt/Data/opt/athlete-training/backend/data/training.db | /opt/athlete-training/backend/data/training.db |
-| /mnt/Data/opt/lt/crawlanalyzer/data/crawlanalyzer.db | /opt/lt/crawlanalyzer/data/crawlanalyzer.db |
-| /mnt/Data/opt/knowledge-monitor/state/knowledge.db | /opt/knowledge-monitor/state/knowledge.db |
+| Source | Size | sin | fue |
+|--------|------|:---:|:---:|
+| strapi3/.tmp/data.db | 344MB | [x] | [x] |
+| lt/crawlanalyzer/data/crawlanalyzer.db | 500KB | [x] | [x] |
+| knowledge-monitor/state/knowledge.db | 5.5MB | [x] | [x] |
+| ~~athlete-training/backend/data/training.db~~ | - | SKIP | SKIP |
+
+**Note:** athlete-training SQLite was not present in source data.
+
+**Migration completed:** 2025-12-17
 
 ```bash
-# Copy SQLite files (simple file copy)
+# On sin - copy from /mnt/Data/opt
 cp /mnt/Data/opt/strapi3/.tmp/data.db /opt/strapi3/.tmp/
-cp /mnt/Data/opt/athlete-training/backend/data/training.db /opt/athlete-training/backend/data/
 cp /mnt/Data/opt/lt/crawlanalyzer/data/crawlanalyzer.db /opt/lt/crawlanalyzer/data/
 cp /mnt/Data/opt/knowledge-monitor/state/knowledge.db /opt/knowledge-monitor/state/
 
-# Fix ownership
-chown deploy:nginx /opt/strapi3/.tmp/data.db
-chown deploy:clickhouse /opt/athlete-training/backend/data/training.db
-chown deploy:clickhouse /opt/lt/crawlanalyzer/data/crawlanalyzer.db
-chown deploy:clickhouse /opt/knowledge-monitor/state/knowledge.db
+# On fue - rsync from sin
+rsync -avz -e "ssh -p 42109" sin:/opt/strapi3/.tmp/data.db /opt/strapi3/.tmp/
+rsync -avz -e "ssh -p 42109" sin:/opt/lt/crawlanalyzer/data/crawlanalyzer.db /opt/lt/crawlanalyzer/data/
+rsync -avz -e "ssh -p 42109" sin:/opt/knowledge-monitor/state/knowledge.db /opt/knowledge-monitor/state/
 ```
 
 ---
 
-### Redis (Config Only)
+### Redis ✅ COMPLETED
 
-**No data migration** - rebuild from scratch.
+**No data migration** - configured from scratch on both servers.
 
-Key config settings to apply:
+| Server | Version | Status |
+|--------|---------|--------|
+| sin | 8.4.0 | [x] Running |
+| fue | 8.4.0 | [x] Running (compiled from source) |
+
+Key config settings applied:
 ```
-bind 0.0.0.0
+bind 127.0.0.1
 port 6379
 databases 16
-save 900 1
-appendfsync everysec
 ```
 
 ---

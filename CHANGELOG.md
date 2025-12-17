@@ -28,6 +28,14 @@
 - No password needed - authenticates via Linux user identity (secure, local-only)
 - Full admin privileges for development/maintenance
 
+### Data Migration: SQLite Files (sin + fue)
+- Copied 3 SQLite databases from /mnt/Data to both sin and fue
+- strapi3/.tmp/data.db (344MB)
+- lt/crawlanalyzer/data/crawlanalyzer.db (500KB)
+- knowledge-monitor/state/knowledge.db (5.5MB)
+- athlete-training SQLite not present in source (skipped)
+- tmdata migration verified complete on sin (8.5GB)
+
 ### Fedora Dev Environment (fue) Package Parity
 - Installed vim 9.1 and htop 3.4.1 to match production baseline
 - Replaced Valkey 8.1.5 with Redis 8.4.0 (compiled from source) for version parity with production
