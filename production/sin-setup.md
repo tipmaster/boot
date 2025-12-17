@@ -204,6 +204,21 @@ reboot
 - Installed tools: Yarn, PM2 6.0.14, Playwright 1.57.0, cpanm
 - All database services enabled and running
 
+### 14a. Configured MariaDB unix_socket authentication
+```bash
+# Enable unix_socket auth for root and deploy user (run in safe mode or as root)
+mariadb -e "
+  FLUSH PRIVILEGES;
+  ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket;
+  CREATE USER IF NOT EXISTS 'deploy'@'localhost' IDENTIFIED VIA unix_socket;
+  GRANT ALL PRIVILEGES ON *.* TO 'deploy'@'localhost' WITH GRANT OPTION;
+  FLUSH PRIVILEGES;
+"
+```
+- **No password required** - authenticates via Linux user identity
+- Only works locally (secure by design)
+- deploy user has full admin access for development/maintenance
+
 ### 15. Compiled PHP 7.1.33 from source for vBulletin
 PHP 7.1 EOL Dec 2019, not available in Remi for EL9. Built without OpenSSL due to OpenSSL 3.x incompatibility.
 
@@ -241,6 +256,60 @@ bcmath, ctype, curl, date, dom, fileinfo, filter, gd, hash, iconv, json, libxml,
 ```bash
 systemctl status php71-fpm  # Check status
 systemctl restart php71-fpm # Restart
+```
+
+### 16. Synced gitignored .env and credential files from /mnt/Data/opt
+
+Project `.gitignore` files exclude sensitive files (`.env`, `.env.shared`, `credentials.json`) that must be copied manually from the old server data.
+
+**Source of truth:** `/mnt/Data/opt/` (old server filesystem)
+
+**Sync script:** `/opt/infra-config/scripts/sync-env-files.sh`
+
+```bash
+# On sin server: sync from /mnt/Data/opt to /opt
+/opt/infra-config/scripts/sync-env-files.sh sin-internal
+
+# From local machine: sync from sin:/mnt/Data/opt to local /opt
+/opt/infra-config/scripts/sync-env-files.sh sin-to-local
+
+# List all files and their sync status
+/opt/infra-config/scripts/sync-env-files.sh list
+```
+
+**Files synced:**
+
+| Project | Files |
+|---------|-------|
+| `infra-config` | `.env.shared` (shared API keys for all projects) |
+| `athlete-training` | `backend/.env`, `backend/.env.mcp`, `backend/.env.test` |
+| `crawlanalyzer` | `.env` |
+| `dataforseo` | `.env` |
+| `gsc-center` | `.env` |
+| `inbox-cleanup` | `.env`, `credentials.json` |
+| `knowledge-monitor` | `.env` |
+| `lt` | `.env` |
+| `serp2rank` | `.env` |
+| `sportmonks-embed` | `.env` |
+| `strapi3` | `config/.env` |
+| `strapi4` | `.env`, `.env.dev`, `.env.prod`, `.env.stg`, `.env.tst` |
+| `strapi5` | `.env` |
+| `tmapp` | `.env` |
+
+**Shared credentials in `.env.shared`:**
+- AI APIs: OpenAI, Anthropic, Gemini, xAI, OpenRouter, Perplexity
+- SEO: DataForSEO
+- Cloudflare: API token, Account ID
+- Databases: MongoDB, ClickHouse, Redis connection params
+- Sports/Fitness: Sportmonks, Garmin, Intervals.icu
+- Other: DeepL, NameSilo
+
+**Usage in projects:**
+```bash
+# Source shared credentials in project .env or scripts
+source /opt/infra-config/.env.shared
+# Or use set -a for export
+set -a && source /opt/infra-config/.env.shared && set +a
 ```
 
 ---

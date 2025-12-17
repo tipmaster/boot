@@ -2,10 +2,39 @@
 
 ## 2025-12-17
 
+### Gitignored .env File Sync (sin + local)
+- Created sync script `/opt/infra-config/scripts/sync-env-files.sh`
+- Synced `.env`, `.env.shared`, and `credentials.json` files from `/mnt/Data/opt/` to `/opt/`
+- Files synced on sin server and locally for 14 projects
+- Documented shared credentials in `infra-config/.env.shared` (AI APIs, databases, Cloudflare, etc.)
+- Projects: athlete-training, crawlanalyzer, dataforseo, gsc-center, inbox-cleanup, knowledge-monitor, lt, serp2rank, sportmonks-embed, strapi3, strapi4, strapi5, tmapp
+
+### PHP 7.1 Build for vBulletin (sin)
+- Compiled PHP 7.1.33 from source (EOL, not in Remi for EL9)
+- Built without OpenSSL due to OpenSSL 3.x API incompatibility
+- Installed to `/usr/local/php71/`
+- Extensions: mysqli, pdo_mysql, gd, curl, mbstring, json, session, zip, opcache
+- Configured PHP-FPM pool on port 9001 (user: deploy)
+- Created systemd service `php71-fpm`
+- Config files versioned in tmcommunity repo (`etc/php71/`)
+- Symlinked from `/usr/local/php71/etc/` to `/opt/tmcommunity/etc/php71/`
+
+### Git Branch Cleanup
+- Deleted stale `master` branches from: tmcommunity, crawlanalyzer
+- Deleted stale `main1` branch from serp2rank
+- Fixed `origin/HEAD` to point to `main` in 13 repos
+- All tipmaster repos now use `main` as default branch
+
+### MariaDB Unix Socket Authentication (sin + fue)
+- Configured passwordless auth for `deploy` user via unix_socket plugin
+- No password needed - authenticates via Linux user identity (secure, local-only)
+- Full admin privileges for development/maintenance
+
 ### Fedora Dev Environment (fue) Package Parity
 - Installed vim 9.1 and htop 3.4.1 to match production baseline
 - Replaced Valkey 8.1.5 with Redis 8.4.0 (compiled from source) for version parity with production
 - Created systemd service for Redis (`/etc/systemd/system/redis.service`)
+- Configured ClickHouse with proper config (users_config, default_profile)
 - Updated bootstrap dependencies script:
   - Removed lighttpd (using nginx instead)
   - Removed certbot (SSL handled differently)

@@ -111,6 +111,44 @@ sudo dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-releas
 sudo dnf install brave-browser
 ```
 
+## 6. Database Setup
+
+### MariaDB with unix_socket auth
+```bash
+sudo dnf install mariadb mariadb-server
+sudo systemctl enable --now mariadb
+sudo mariadb -e "
+  CREATE USER IF NOT EXISTS 'deploy'@'localhost' IDENTIFIED VIA unix_socket;
+  GRANT ALL PRIVILEGES ON *.* TO 'deploy'@'localhost' WITH GRANT OPTION;
+  FLUSH PRIVILEGES;
+"
+```
+- No password needed - authenticates via Linux user identity
+- Test: `mariadb -e "SELECT USER()"`
+
+### Redis (compiled from source for version parity)
+```bash
+cd /tmp && curl -sLO https://github.com/redis/redis/archive/refs/tags/8.4.0.tar.gz
+tar xzf 8.4.0.tar.gz && cd redis-8.4.0 && make -j$(nproc) && sudo make install
+sudo mkdir -p /etc/redis /var/lib/redis /var/log/redis
+sudo chown -R deploy:deploy /var/lib/redis /var/log/redis
+# Create systemd service (see /etc/systemd/system/redis.service)
+sudo systemctl enable --now redis
+```
+
+### ClickHouse
+```bash
+# Binary installed separately, config in /etc/clickhouse-server/
+# Key config additions: users_config, default_profile, default_database
+sudo systemctl enable --now clickhouse-server
+```
+
+### MongoDB
+```bash
+# Uses official MongoDB repo for 8.0
+sudo systemctl enable --now mongod
+```
+
 ---
 
 ## Changes Applied for Fedora
