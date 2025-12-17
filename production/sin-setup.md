@@ -80,6 +80,7 @@ ssh -p 42109 root@sin
 | Node.js | 18.20.8 | Strapi 4 (via nvm) |
 | Node.js | 14.21.3 | Strapi 3 EOL (via nvm) |
 | PHP | 8.1.34 | Remi modular |
+| PHP | 7.1.33 | Compiled from source for vBulletin (/usr/local/php71) |
 
 ### Databases
 | Database | Version | Service |
@@ -91,11 +92,12 @@ ssh -p 42109 root@sin
 | SQLite | 3.34.1 | - |
 
 ### Web Stack
-| Software | Version | Service |
-|----------|---------|---------|
-| nginx | 1.29.4 | nginx |
-| PHP-FPM | 8.1.34 | php-fpm |
-| Postfix | 3.5.25 | postfix |
+| Software | Version | Service | Port |
+|----------|---------|---------|------|
+| nginx | 1.29.4 | nginx | 80/443 |
+| PHP-FPM | 8.1.34 | php-fpm | 9000 |
+| PHP-FPM | 7.1.33 | php71-fpm | 9001 |
+| Postfix | 3.5.25 | postfix | 25 |
 
 ### Tools
 | Tool | Version |
@@ -202,14 +204,50 @@ reboot
 - Installed tools: Yarn, PM2 6.0.14, Playwright 1.57.0, cpanm
 - All database services enabled and running
 
+### 15. Compiled PHP 7.1.33 from source for vBulletin
+PHP 7.1 EOL Dec 2019, not available in Remi for EL9. Built without OpenSSL due to OpenSSL 3.x incompatibility.
+
+**Build configuration:**
+```bash
+./configure \
+  --prefix=/usr/local/php71 \
+  --with-config-file-path=/usr/local/php71/etc \
+  --enable-fpm --with-fpm-user=nginx --with-fpm-group=nginx \
+  --enable-mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd \
+  --with-curl --with-gd --with-jpeg-dir=/usr --with-png-dir=/usr --with-freetype-dir=/usr \
+  --with-zlib --enable-mbstring --enable-xml --enable-simplexml --enable-session \
+  --enable-json --enable-opcache --enable-zip --with-libzip \
+  --enable-sockets --enable-bcmath --disable-phar
+```
+
+**Installation paths:**
+- Binary: `/usr/local/php71/bin/php`
+- FPM: `/usr/local/php71/sbin/php-fpm`
+- Config: `/usr/local/php71/etc/php.ini`
+- FPM config: `/usr/local/php71/etc/php-fpm.conf`
+- Pool config: `/usr/local/php71/etc/php-fpm.d/www.conf`
+
+**Enabled extensions:**
+bcmath, ctype, curl, date, dom, fileinfo, filter, gd, hash, iconv, json, libxml, mbstring, mysqli, mysqlnd, pcre, PDO, pdo_mysql, pdo_sqlite, posix, Reflection, session, SimpleXML, sockets, SPL, sqlite3, standard, tokenizer, xml, xmlreader, xmlwriter, zip, zlib
+
+**FPM Pool settings** (matched from old server):
+- user: deploy, group: nginx
+- listen: 127.0.0.1:9001
+- pm.max_children: 50, start_servers: 5, min_spare: 5, max_spare: 35
+- slowlog: /var/log/php71-fpm-slow.log
+- session.save_path: /var/lib/php/session
+
+**Service:**
+```bash
+systemctl status php71-fpm  # Check status
+systemctl restart php71-fpm # Restart
+```
+
 ---
 
 ## Pending Tasks
 
 ### Next
-- [ ] Build PHP 7.1 from source (for tmcommunity/vBulletin 3.8.2)
-  - PHP 7.1 EOL Dec 2019, not in Remi for EL9
-  - Will run as separate PHP-FPM pool on port 9001
 - [ ] Clone repositories to /opt/
 - [ ] Set up symlinks per bootstrap pattern
 
