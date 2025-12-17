@@ -247,9 +247,19 @@ systemctl restart php71-fpm # Restart
 
 ## Pending Tasks
 
+### Completed (2025-12-17)
+- [x] Clone repositories to /opt/
+- [x] Set up symlinks per bootstrap pattern
+  - Root-level symlinks: 13 created
+  - Serverconfig /etc symlinks: 12 created
+  - Context-engineering symlinks: via set-soft-links.sh
+  - Legacy paths removed: code updated to use `/lt/`
+  - ClickHouse: updated to use `/usr/bin/clickhouse` and default ports
+
 ### Next
-- [ ] Clone repositories to /opt/
-- [ ] Set up symlinks per bootstrap pattern
+- [ ] Clone remaining repos (promos, revive, sendy)
+- [ ] Migrate nginx site configs
+- [ ] Configure PHP 8.1 FPM pool
 
 ### Later
 - [ ] Decide on Cockpit: disable or keep
