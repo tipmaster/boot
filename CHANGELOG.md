@@ -2,6 +2,15 @@
 
 ## 2025-12-17
 
+### Fedora Dev Environment (fue) Package Parity
+- Installed vim 9.1 and htop 3.4.1 to match production baseline
+- Replaced Valkey 8.1.5 with Redis 8.4.0 (compiled from source) for version parity with production
+- Created systemd service for Redis (`/etc/systemd/system/redis.service`)
+- Updated bootstrap dependencies script:
+  - Removed lighttpd (using nginx instead)
+  - Removed certbot (SSL handled differently)
+  - Added redis to package list
+
 ### Production Server (sin) Setup
 - Completed initial server setup (13 steps)
 - Hardware: Intel i9-9900K, 64GB RAM, 3x 238GB SSDs (RAID1)

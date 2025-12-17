@@ -71,22 +71,50 @@ ssh -p 42109 root@sin
 
 ## Installed Software
 
-### Base Packages
-| Package | Version |
-|---------|---------|
-| git | 2.47.3 |
-| vim | 8.2 |
-| htop | 3.3.0 |
-| make | 4.3 |
-| gcc | 11.5.0 |
-| node | 22.19.0 |
-| npm | 10.9.3 |
-| python3 | 3.9.23 |
+### Runtimes
+| Runtime | Version | Notes |
+|---------|---------|-------|
+| Perl | 5.42.0 | Compiled from source with threads |
+| Python | 3.13.1 | Compiled from source |
+| Node.js | 22.21.1 | Primary (via nvm) |
+| Node.js | 18.20.8 | Strapi 4 (via nvm) |
+| Node.js | 14.21.3 | Strapi 3 EOL (via nvm) |
+| PHP | 8.1.34 | Remi modular |
+
+### Databases
+| Database | Version | Service |
+|----------|---------|---------|
+| MariaDB | 11.4.9 LTS | mariadb |
+| MongoDB | 8.0.16 | mongod |
+| ClickHouse | 25.11.2 | clickhouse-server |
+| Redis | 8.4.0 | redis |
+| SQLite | 3.34.1 | - |
+
+### Web Stack
+| Software | Version | Service |
+|----------|---------|---------|
+| nginx | 1.29.4 | nginx |
+| PHP-FPM | 8.1.34 | php-fpm |
+| Postfix | 3.5.25 | postfix |
+
+### Tools
+| Tool | Version |
+|------|---------|
+| nvm | 0.40.2 |
+| npm | 10.9.4 |
+| Yarn | 1.22.22 |
+| PM2 | 6.0.14 |
+| Playwright | 1.57.0 |
+| cpanm | 1.7048 |
 
 ### Enabled Repositories
 - EPEL 9
 - CRB (CodeReady Builder)
-- Node.js 22 module stream
+- Remi (modular + safe)
+- MariaDB 11.4
+- MongoDB 8.0
+- ClickHouse stable
+- nginx mainline
 
 ---
 
@@ -165,19 +193,31 @@ reboot
 ```
 - Verified: `getenforce` returns `Disabled`
 
+### 14. Installed production software stack
+- Compiled Perl 5.42.0 from source (`-Dusethreads -Duse64bitall`)
+- Compiled Python 3.13.1 from source with pip
+- Installed nvm 0.40.2 with Node.js 14/18/22
+- Installed databases: MariaDB 11.4.9, MongoDB 8.0.16, ClickHouse 25.11.2, Redis 8.4.0
+- Installed web stack: nginx 1.29.4, PHP 8.1.34 (FPM), Postfix 3.5.25
+- Installed tools: Yarn, PM2 6.0.14, Playwright 1.57.0, cpanm
+- All database services enabled and running
+
 ---
 
 ## Pending Tasks
+
+### Next
+- [ ] Build PHP 7.1 from source (for tmcommunity/vBulletin 3.8.2)
+  - PHP 7.1 EOL Dec 2019, not in Remi for EL9
+  - Will run as separate PHP-FPM pool on port 9001
+- [ ] Clone repositories to /opt/
+- [ ] Set up symlinks per bootstrap pattern
 
 ### Later
 - [ ] Decide on Cockpit: disable or keep
   - Web-based server management GUI
   - Access: https://101.99.89.98:9090 (if enabled)
   - To disable: `systemctl disable --now cockpit.socket`
-
-### Software Installation (after SELinux disabled)
-- [ ] Clone repositories to /opt/
-- [ ] Set up symlinks per bootstrap pattern
 
 ---
 
