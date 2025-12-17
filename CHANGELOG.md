@@ -2,6 +2,14 @@
 
 ## 2025-12-17
 
+### Cron.d Ownership Fix (sin + fue)
+- **Problem**: `/etc/cron.d` files must be owned by `root:root` - symlinks don't work
+- **Solution**: Copy files instead of symlinking with a sync script
+- Created `/opt/infra-config/scripts/sync-cron-files.sh`
+- Removed broken symlinks from `/opt/serverconfig/etc/cron.d/`
+- Run after adding/changing project cron files: `/opt/infra-config/scripts/sync-cron-files.sh`
+- Note: nginx and systemd configs work fine with deploy-owned symlinks (only need read access)
+
 ### MRTG Server Monitoring (sin)
 - Migrated MRTG from old server to `/opt/mrtg` (tipmaster/mrtg repo)
 - 45 monitoring metrics across 11 categories:

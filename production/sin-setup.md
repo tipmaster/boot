@@ -108,6 +108,9 @@ ssh -p 42109 root@sin
 | PM2 | 6.0.14 |
 | Playwright | 1.57.0 |
 | cpanm | 1.7048 |
+| wget2 | 2.2.0 |
+| Go | 1.25.3 |
+| minify | latest |
 
 ### Enabled Repositories
 - EPEL 9
@@ -416,6 +419,26 @@ pm2 save                # Save current state (run after changes)
   - Nginx: mrtg.flywheel.bz via `/opt/serverconfig/etc/nginx/sites-enabled/mrtg.flywheel.bz.conf`
   - Output: `/opt/mrtg/output/` (187 PNG, 47 HTML files)
   - **Live at: https://mrtg.flywheel.bz/** (Cloudflare SSL → origin HTTP)
+
+### SSG Dependencies (2025-12-17)
+- [x] Install wget2 for HTTP/2 parallel downloads
+  ```bash
+  sudo dnf install -y wget2
+  ```
+- [x] Install Go for minify tool
+  ```bash
+  sudo dnf install -y golang
+  ```
+- [x] Install tdewolff/minify for HTML/CSS/JS minification
+  ```bash
+  go install github.com/tdewolff/minify/v2/cmd/minify@latest
+  # Installs to /home/deploy/go/bin/minify
+  ```
+- [x] Create output directories for SSG generation
+  ```bash
+  mkdir -p /opt/lt/output/ssg
+  mkdir -p /opt/lt/build/ssg/logs
+  ```
 
 ### Later
 - [x] ~~Decide on Cockpit: disable or keep~~ → **Disabled** (2025-12-17)
