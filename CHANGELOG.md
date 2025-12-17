@@ -2,6 +2,20 @@
 
 ## 2025-12-17
 
+### MRTG Server Monitoring (sin)
+- Migrated MRTG from old server to `/opt/mrtg` (tipmaster/mrtg repo)
+- 45 monitoring metrics across 11 categories:
+  - CPU, Memory, Disk, Network, MariaDB, MongoDB, Redis, Nginx, PHP-FPM, Perl, System
+- Fixed scripts for AlmaLinux 9 compatibility:
+  - MariaDB: unix_socket auth via `mariadb` command (no passwords)
+  - Network: /proc/net/dev instead of iftop (no root required)
+  - Interface: eth0 → enp6s0 for modern naming
+- Installed packages: sysstat (iostat), iftop
+- Deploy structure: deploy/nginx/mrtg.flywheel.bz.conf, deploy/mrtg.cron
+- Cron job: every 3 minutes via /etc/cron.d/mrtg
+- Output: /opt/mrtg/output/ (187 PNG, 47 HTML files)
+- Domain: mrtg.flywheel.bz (needs Cloudflare DNS A record)
+
 ### Gitignored .env File Sync (sin + local)
 - Created sync script `/opt/infra-config/scripts/sync-env-files.sh`
 - Synced `.env`, `.env.shared`, and `credentials.json` files from `/mnt/Data/opt/` to `/opt/`
