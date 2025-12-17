@@ -257,7 +257,6 @@ systemctl restart php71-fpm # Restart
   - ClickHouse: updated to use `/usr/bin/clickhouse` and default ports
 
 ### Next
-- [ ] Clone remaining repos (promos, revive, sendy)
 - [ ] Migrate nginx site configs
 - [ ] Configure PHP 8.1 FPM pool
 

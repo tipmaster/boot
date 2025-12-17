@@ -183,14 +183,16 @@ ssh deploy@fedora.flywheel.bz
 **Service Availability (fue vs production):**
 | Service | fue | Production |
 |---------|:---:|:----------:|
-| MariaDB/MySQL | - | ✓ |
-| MongoDB | - | ✓ |
-| ClickHouse | - | ✓ |
-| Redis | - | ✓ |
-| nginx | - | ✓ |
-| PM2 | - | ✓ |
+| MariaDB/MySQL | ✓ | ✓ |
+| MongoDB | ✓ | ✓ |
+| ClickHouse | ✓ | ✓ |
+| Redis | ✓ | ✓ |
+| nginx | ✓ | ✓ |
+| PM2 | ✓ | ✓ |
+| PHP-FPM | ✓ | ✓ |
+| Postfix | ✓ | ✓ |
 
-**Note:** fue is a fresh dev environment. Services installed as needed.
+**Note:** All core services now installed on fue for development parity.
 
 **User Migration:**
 - SSH access moved from root to deploy user
@@ -257,3 +259,63 @@ cd /opt
 t7                  # Open 7-pane tmux layout
 cl                  # Start Claude in first pane
 ```
+
+---
+
+## Cross-System Version Gaps (Fedora 43 vs AlmaLinux 9)
+
+Due to fundamental differences between Fedora (bleeding-edge) and AlmaLinux 9 (RHEL-based, stability-focused), some packages cannot achieve version parity.
+
+### Cannot Upgrade on Fedora (fue)
+
+| Package | Production (sin) | Fedora (fue) | Reason |
+|---------|------------------|--------------|--------|
+| MariaDB | 11.4.9 | 10.11.13 | MariaDB 11.4 RHEL9 packages require `libboost_program_options.so.1.75.0` - Fedora 43 ships boost 1.87. Incompatible ABI. |
+
+**Attempted fixes:**
+- MariaDB official RHEL9 repo → dependency conflicts with Fedora's boost/galera
+- Compiling from source → possible but creates maintenance burden
+
+**Impact:** Minor. MariaDB 10.11 and 11.4 are both LTS. SQL syntax and features are compatible for development purposes.
+
+### Cannot Upgrade on Production (sin)
+
+| Package | Production (sin) | Fedora (fue) | Reason |
+|---------|------------------|--------------|--------|
+| git | 2.47.3 | 2.52.0 | AlmaLinux 9 repos ship 2.47.3 as latest |
+| vim | 8.2 | 9.1 | AlmaLinux 9 repos ship 8.2 as latest |
+| htop | 3.3.0 | 3.4.1 | AlmaLinux 9 repos ship 3.3.0 as latest |
+| make | 4.3 | 4.4.1 | AlmaLinux 9 repos ship 4.3 as latest |
+| gcc | 11.5.0 | 15.2.1 | AlmaLinux 9 repos ship GCC 11 as latest |
+| ClickHouse | 25.11.2 | 25.12.1 | ClickHouse stable repo has 25.11.2 for RHEL9 |
+| Python | 3.9.23 | 3.14.2 | Production compiled 3.9.x for compatibility |
+| SQLite | 3.34.1 | 3.50.2 | System package, RHEL9 ships older version |
+| Postfix | 3.5.25 | 3.10.3 | AlmaLinux 9 repos ship 3.5.x |
+
+**Reason:** AlmaLinux 9 (RHEL clone) prioritizes stability over latest versions. These packages are at their newest available versions for the OS. Upgrading would require compiling from source.
+
+**Impact:** None for development. Fedora having newer versions is acceptable - code developed on newer tools will work on older production versions.
+
+### Packages with Full Parity ✅
+
+| Package | Version | Notes |
+|---------|---------|-------|
+| Node.js 22 | 22.21.1 | via nvm |
+| Node.js 18 | 18.20.8 | via nvm |
+| Node.js 14 | 14.21.3 | via nvm |
+| nginx | 1.29.4 | mainline repo |
+| Redis | 8.4.0 | compiled from source (fue) |
+| MongoDB | 8.0.16 | official repo |
+| Perl | 5.42.0 | compiled from source |
+| PHP | 8.1.33/34 | Remi repo |
+| PM2 | 6.0.14 | npm global |
+| Yarn | 1.22.22 | npm global |
+| Playwright | 1.57.0 | npm global |
+| cpanm | 1.7048 | system/CPAN |
+| nvm | 0.40.2 | install script |
+
+### Recommendations
+
+1. **For MariaDB:** Accept version difference. Test schema changes on both versions before deploying.
+2. **For system tools:** Fedora-newer is fine. Don't rely on bleeding-edge features unavailable in production.
+3. **For critical runtime parity:** Use nvm (Node.js), compiled-from-source (Perl, Redis), or third-party repos (nginx mainline, Remi PHP).
