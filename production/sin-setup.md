@@ -312,6 +312,74 @@ source /opt/infra-config/.env.shared
 set -a && source /opt/infra-config/.env.shared && set +a
 ```
 
+### 17. Configured PM2 apps and auto-restart on server reboot
+
+**PM2 Apps Running:**
+
+| App | Project | Node Version | Port | Notes |
+|-----|---------|--------------|------|-------|
+| strapi3 | /opt/strapi3 | 14.21.3 | 1337 | Uses wrapper script for nvm |
+| strapi4 | /opt/strapi4 | 22.21.1 | 1338 | - |
+| promos | /opt/promos | 22.21.1 | 3000 | Cluster mode |
+| promos-admin | /opt/promos | 22.21.1 | 3001 | Cluster mode |
+
+**Strapi 3 Special Configuration:**
+
+Strapi 3 requires Node.js ≤14 and has dependency issues with newer Node versions:
+
+```bash
+# Wrapper script to use Node 14 via nvm
+cat /opt/strapi3/start.sh
+#!/bin/bash
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+nvm use 14
+cd /opt/strapi3
+exec node node_modules/.bin/strapi develop
+
+# Fix duplicate graphql module issue
+rm -rf /opt/strapi3/node_modules/strapi-plugin-graphql/node_modules/graphql
+
+# Required peer dependencies (install with Node 14)
+nvm use 14
+npm install graphql@15 knex@0.21.18 sqlite3
+```
+
+**Strapi 4 Configuration:**
+
+```bash
+# Copy database config template
+cp /opt/strapi4/config/database.js.dev /opt/strapi4/config/database.js
+```
+
+**PM2 Startup Configuration:**
+
+```bash
+# Save current process list
+pm2 save
+
+# Generate and install systemd startup script
+pm2 startup
+# Then run the sudo command it outputs:
+sudo env PATH=$PATH:/home/deploy/.nvm/versions/node/v22.21.1/bin \
+  /home/deploy/.nvm/versions/node/v22.21.1/lib/node_modules/pm2/bin/pm2 \
+  startup systemd -u deploy --hp /home/deploy
+
+# Verify
+systemctl is-enabled pm2-deploy  # Should show: enabled
+cat /home/deploy/.pm2/dump.pm2 | python3 -c "import json,sys; d=json.load(sys.stdin); print([p['name'] for p in d])"
+# Output: ['strapi3', 'strapi4', 'promos', 'promos-admin']
+```
+
+**PM2 Commands:**
+
+```bash
+pm2 status              # View all apps
+pm2 logs <app>          # View logs
+pm2 restart <app>       # Restart specific app
+pm2 save                # Save current state (run after changes)
+```
+
 ---
 
 ## Pending Tasks
@@ -332,6 +400,12 @@ set -a && source /opt/infra-config/.env.shared && set +a
 - [x] Configure PHP 8.1 FPM pool
   - Symlinked `/etc/php-fpm.d/www.conf` → `/opt/serverconfig/etc/php-fpm.d/www.conf`
   - User: deploy, Port: 9002 (9000 used by ClickHouse, 9001 by PHP 7.1)
+- [x] Configure PM2 apps and auto-restart
+  - Started: strapi3, strapi4, promos, promos-admin
+  - strapi3: Uses Node 14 via wrapper script, fixed graphql/knex dependencies
+  - strapi4: Created database.js from template
+  - PM2 startup systemd service enabled (pm2-deploy.service)
+  - Process list saved to /home/deploy/.pm2/dump.pm2
 
 ### Later
 - [ ] Decide on Cockpit: disable or keep
