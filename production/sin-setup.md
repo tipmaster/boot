@@ -408,10 +408,9 @@ pm2 save                # Save current state (run after changes)
   - Process list saved to /home/deploy/.pm2/dump.pm2
 
 ### Later
-- [ ] Decide on Cockpit: disable or keep
-  - Web-based server management GUI
-  - Access: https://101.99.89.98:9090 (if enabled)
-  - To disable: `systemctl disable --now cockpit.socket`
+- [x] ~~Decide on Cockpit: disable or keep~~ → **Disabled** (2025-12-17)
+  - Web-based server management GUI - tested, not needed for now
+  - Re-enable if needed: `sudo systemctl enable --now cockpit.socket && sudo firewall-cmd --add-service=cockpit --permanent --reload`
 
 ---
 
