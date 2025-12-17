@@ -14,7 +14,7 @@
 - Deploy structure: deploy/nginx/mrtg.flywheel.bz.conf, deploy/mrtg.cron
 - Cron job: every 3 minutes via /etc/cron.d/mrtg
 - Output: /opt/mrtg/output/ (187 PNG, 47 HTML files)
-- Domain: mrtg.flywheel.bz (needs Cloudflare DNS A record)
+- Domain: https://mrtg.flywheel.bz/ (Cloudflare Flexible SSL → origin HTTP:80)
 
 ### Gitignored .env File Sync (sin + local)
 - Created sync script `/opt/infra-config/scripts/sync-env-files.sh`

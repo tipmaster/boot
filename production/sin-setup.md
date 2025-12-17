@@ -395,7 +395,6 @@ pm2 save                # Save current state (run after changes)
 
 ### Next
 - [ ] Migrate remaining nginx site configs
-- [ ] Create Cloudflare DNS A record for mrtg.flywheel.bz → 101.99.89.98 (token needs DNS edit permissions)
 
 ### Completed (2025-12-17 continued)
 - [x] Configure PHP 8.1 FPM pool
@@ -416,6 +415,7 @@ pm2 save                # Save current state (run after changes)
   - Cron: `/etc/cron.d/mrtg` → every 3 minutes
   - Nginx: mrtg.flywheel.bz via `/opt/serverconfig/etc/nginx/sites-enabled/mrtg.flywheel.bz.conf`
   - Output: `/opt/mrtg/output/` (187 PNG, 47 HTML files)
+  - **Live at: https://mrtg.flywheel.bz/** (Cloudflare SSL → origin HTTP)
 
 ### Later
 - [x] ~~Decide on Cockpit: disable or keep~~ → **Disabled** (2025-12-17)
