@@ -9,21 +9,12 @@
 - Documented shared credentials in `infra-config/.env.shared` (AI APIs, databases, Cloudflare, etc.)
 - Projects: athlete-training, crawlanalyzer, dataforseo, gsc-center, inbox-cleanup, knowledge-monitor, lt, serp2rank, sportmonks-embed, strapi3, strapi4, strapi5, tmapp
 
-### PHP 7.1 Build for vBulletin (sin)
-- Compiled PHP 7.1.33 from source (EOL, not in Remi for EL9)
-- Built without OpenSSL due to OpenSSL 3.x API incompatibility
-- Installed to `/usr/local/php71/`
-- Extensions: mysqli, pdo_mysql, gd, curl, mbstring, json, session, zip, opcache
-- Configured PHP-FPM pool on port 9001 (user: deploy)
-- Created systemd service `php71-fpm`
-- Config files versioned in tmcommunity repo (`etc/php71/`)
-- Symlinked from `/usr/local/php71/etc/` to `/opt/tmcommunity/etc/php71/`
-
 ### Sendy & Revive Fix (sin)
 - Fixed nginx config for sendy.flywheel.bz and ads.flywheel.bz
 - Both configs were pointing to port 9000 (ClickHouse) instead of PHP-FPM
-- Sendy: changed to port 9002 (PHP 8.1 FPM) - 200 OK
-- Revive: changed to port 9003 (PHP 5.6 FPM) - 200 OK
+- Sendy: port 9002 (PHP 8.1 FPM) - 200 OK
+- Revive: port 9002 (PHP 8.1 FPM) - 200 OK
+- tmcommunity/vBulletin: port 9003 (PHP 5.6 FPM) - required
 - Copied var/ files from /mnt/Data for Revive config
 
 ### Git Branch Cleanup

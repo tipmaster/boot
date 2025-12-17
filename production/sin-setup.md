@@ -79,8 +79,8 @@ ssh -p 42109 root@sin
 | Node.js | 22.21.1 | Primary (via nvm) |
 | Node.js | 18.20.8 | Strapi 4 (via nvm) |
 | Node.js | 14.21.3 | Strapi 3 EOL (via nvm) |
-| PHP | 8.1.34 | Remi modular |
-| PHP | 7.1.33 | Compiled from source for vBulletin (/usr/local/php71) |
+| PHP | 8.1.34 | Remi modular (Sendy, Revive) |
+| PHP | 5.6.40 | Compiled from source for vBulletin (/usr/local/php56) |
 
 ### Databases
 | Database | Version | Service |
@@ -92,12 +92,12 @@ ssh -p 42109 root@sin
 | SQLite | 3.34.1 | - |
 
 ### Web Stack
-| Software | Version | Service | Port |
-|----------|---------|---------|------|
-| nginx | 1.29.4 | nginx | 80/443 |
-| PHP-FPM | 8.1.34 | php-fpm | 9000 |
-| PHP-FPM | 7.1.33 | php71-fpm | 9001 |
-| Postfix | 3.5.25 | postfix | 25 |
+| Software | Version | Service | Port | Used by |
+|----------|---------|---------|------|---------|
+| nginx | 1.29.4 | nginx | 80/443 | - |
+| PHP-FPM | 8.1.34 | php-fpm | 9002 | Sendy, Revive |
+| PHP-FPM | 5.6.40 | php56-fpm | 9003 | tmcommunity/vBulletin |
+| Postfix | 3.5.25 | postfix | 25 | - |
 
 ### Tools
 | Tool | Version |
