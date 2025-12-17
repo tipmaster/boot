@@ -10,6 +10,15 @@
   - Removed lighttpd (using nginx instead)
   - Removed certbot (SSL handled differently)
   - Added redis to package list
+- Installed PHP 8.1.33 via Remi modular repo
+- Installed Postfix 3.10.3
+- Installed Yarn 1.22.22 globally
+- Upgraded nginx 1.28.0 → 1.29.4 (nginx mainline repo)
+- Installed nvm 0.40.2 with Node.js 14.21.3, 18.20.8, 22.21.1
+- Installed Playwright 1.57.0
+- Documented cross-system version gaps (Fedora 43 vs AlmaLinux 9)
+  - MariaDB 11.4 unavailable on Fedora (boost ABI incompatibility)
+  - System tools (git, vim, gcc, etc.) newer on Fedora by design
 
 ### Production Server (sin) Setup
 - Completed initial server setup (13 steps)
