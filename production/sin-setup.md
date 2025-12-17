@@ -258,7 +258,11 @@ systemctl restart php71-fpm # Restart
 
 ### Next
 - [ ] Migrate nginx site configs
-- [ ] Configure PHP 8.1 FPM pool
+
+### Completed (2025-12-17 continued)
+- [x] Configure PHP 8.1 FPM pool
+  - Symlinked `/etc/php-fpm.d/www.conf` → `/opt/serverconfig/etc/php-fpm.d/www.conf`
+  - User: deploy, Port: 9002 (9000 used by ClickHouse, 9001 by PHP 7.1)
 
 ### Later
 - [ ] Decide on Cockpit: disable or keep
