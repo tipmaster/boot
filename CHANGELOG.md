@@ -19,6 +19,13 @@
 - Config files versioned in tmcommunity repo (`etc/php71/`)
 - Symlinked from `/usr/local/php71/etc/` to `/opt/tmcommunity/etc/php71/`
 
+### Sendy & Revive Fix (sin)
+- Fixed nginx config for sendy.flywheel.bz and ads.flywheel.bz
+- Both configs were pointing to port 9000 (ClickHouse) instead of PHP-FPM
+- Sendy: changed to port 9002 (PHP 8.1 FPM) - 200 OK
+- Revive: changed to port 9003 (PHP 5.6 FPM) - 200 OK
+- Copied var/ files from /mnt/Data for Revive config
+
 ### Git Branch Cleanup
 - Deleted stale `master` branches from: tmcommunity, crawlanalyzer
 - Deleted stale `main1` branch from serp2rank
