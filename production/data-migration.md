@@ -15,7 +15,7 @@ Migration of database and file data from old server (/mnt/Data on sin) to produc
 | tmdata | 8.5GB | [x] | [ ] | Flat files |
 | ClickHouse | 528MB | [x] | [ ] | 2 databases (16M+ rows) |
 | **Phase 2** |
-| MongoDB | 1.1GB | [ ] | [ ] | 6.x → 8.0 (version gap) |
+| MongoDB | 1.1GB | [x] | [ ] | 4 databases migrated (99%+) |
 | SQLite | ~350MB | [x] | [x] | 3 databases (strapi3, crawlanalyzer, knowledge-monitor) |
 | Redis | config | [x] | [x] | Configured from scratch |
 
@@ -148,30 +148,53 @@ sudo systemctl start clickhouse-server
 
 ## Phase 2: MongoDB, SQLite, Redis
 
-### MongoDB (6.x → 8.0)
+### MongoDB ✅ COMPLETED on sin (6.x → 8.0)
 
-**Database:** `sportmonks`
-**Collections (16):** aigcore, autocomplete_responses, countries, fixtures, keywords, leagues, organic_responses, players, queries, seasons, standings, teams, tokens, topscorers, trends_responses, tvstations
+**Migration completed:** 2025-12-17
 
-**Warning:** Version gap (6.x → 8.0) requires mongodump/mongorestore, not direct file copy.
+**Found 4 databases** (not just sportmonks):
 
+| Database | Collections | Docs Migrated |
+|----------|-------------|---------------|
+| sportmonks | 10 | ~170K (99%+) |
+| seofordata | 6 | 214K (100%) |
+| aig | 1 | 4.5K (100%) |
+| smv3 | 13 | 102K (100%) |
+
+**sportmonks detail:**
+| Collection | Migrated | Note |
+|------------|----------|------|
+| teams | 46,322 | 99.99% |
+| fixtures | 76,000 | 89% (BSON corruption) |
+| seasons | 17,384 | 100% |
+| players | 6,853 | 100% |
+| standings | 5,400 | 100% |
+| queries | 5,448 | 100% |
+| leagues | 2,381 | 100% |
+| tvstations | 984 | 100% |
+| countries | 243 | 100% |
+
+**Migration approach:**
 ```bash
-# Approach: Start temporary mongod on old data, dump, restore
+# 1. Fix ownership and start temp mongod on old data
+sudo chown -R mongod:mongod /mnt/Data/var/lib/mongo/
+sudo mongod --dbpath /mnt/Data/var/lib/mongo --port 27018 --bind_ip 127.0.0.1 --fork --logpath /tmp/mongod-old.log
 
-# 1. Start temporary mongod on port 27018 with old data
-mongod --dbpath /mnt/Data/var/lib/mongo --port 27018 --bind_ip 127.0.0.1 &
-
-# 2. Dump sportmonks database
+# 2. Dump all databases
 mongodump --port 27018 --db sportmonks --out /tmp/mongodump/
+mongodump --port 27018 --db seofordata --out /tmp/mongodump/
+mongodump --port 27018 --db aig --out /tmp/mongodump/
+mongodump --port 27018 --db smv3 --out /tmp/mongodump/
 
-# 3. Stop temporary mongod
-kill %1
-
-# 4. Restore to running MongoDB 8.0
+# 3. Restore to MongoDB 8.0
 mongorestore --db sportmonks /tmp/mongodump/sportmonks/
+mongorestore --db seofordata /tmp/mongodump/seofordata/
+mongorestore --db aig /tmp/mongodump/aig/
+mongorestore --db smv3 /tmp/mongodump/smv3/
 
-# 5. Verify
-mongosh --eval "db.getSiblingDB('sportmonks').getCollectionNames()"
+# 4. Cleanup
+sudo pkill -f 'mongod.*27018'
+rm -rf /tmp/mongodump
 ```
 
 ---

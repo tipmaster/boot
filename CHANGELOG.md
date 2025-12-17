@@ -41,6 +41,12 @@
 - Total rows: 16.5M+ (gsc_data: 16.2M, collection_log: 201K)
 - Copied data/, metadata/, and store/ directories with UUIDs
 
+### Data Migration: MongoDB (sin)
+- Migrated 4 databases: sportmonks, seofordata, aig, smv3
+- Used temp mongod on port 27018 → mongodump → mongorestore
+- Total: ~490K documents (99%+ success)
+- Minor BSON corruption in sportmonks.fixtures (89% recovered)
+
 ### Fedora Dev Environment (fue) Package Parity
 - Installed vim 9.1 and htop 3.4.1 to match production baseline
 - Replaced Valkey 8.1.5 with Redis 8.4.0 (compiled from source) for version parity with production
