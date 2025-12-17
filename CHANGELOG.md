@@ -36,6 +36,11 @@
 - athlete-training SQLite not present in source (skipped)
 - tmdata migration verified complete on sin (8.5GB)
 
+### Data Migration: ClickHouse (sin)
+- Migrated 2 databases: crawlanalyzer_indexing, gsc_center
+- Total rows: 16.5M+ (gsc_data: 16.2M, collection_log: 201K)
+- Copied data/, metadata/, and store/ directories with UUIDs
+
 ### Fedora Dev Environment (fue) Package Parity
 - Installed vim 9.1 and htop 3.4.1 to match production baseline
 - Replaced Valkey 8.1.5 with Redis 8.4.0 (compiled from source) for version parity with production

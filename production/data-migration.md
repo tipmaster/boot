@@ -13,7 +13,7 @@ Migration of database and file data from old server (/mnt/Data on sin) to produc
 | **Phase 1** |
 | MariaDB | ~10GB | [x] | [ ] | 9 databases migrated |
 | tmdata | 8.5GB | [x] | [ ] | Flat files |
-| ClickHouse | 528MB | [ ] | [ ] | 2 databases |
+| ClickHouse | 528MB | [x] | [ ] | 2 databases (16M+ rows) |
 | **Phase 2** |
 | MongoDB | 1.1GB | [ ] | [ ] | 6.x → 8.0 (version gap) |
 | SQLite | ~350MB | [x] | [x] | 3 databases (strapi3, crawlanalyzer, knowledge-monitor) |
@@ -110,44 +110,38 @@ du -sh /opt/tmdata/  # 8.5G
 
 ---
 
-### 3. ClickHouse
+### 3. ClickHouse ✅ COMPLETED on sin
 
 **Source:** `/mnt/Data/var/lib/clickhouse/`
+**Migration completed:** 2025-12-17
 
-| Database | Tables | Status |
-|----------|--------|--------|
-| crawlanalyzer_indexing | indexing_submissions, quota_usage, sites, url_inspection_results, url_lists | [ ] |
-| gsc_center | collection_log, gsc_data, sites | [ ] |
-| ~~default~~ | (empty) | SKIP |
-| ~~system~~ | (built-in) | SKIP |
+| Database | Table | Rows |
+|----------|-------|------|
+| crawlanalyzer_indexing | indexing_submissions | 517 |
+| crawlanalyzer_indexing | quota_usage | 2 |
+| crawlanalyzer_indexing | sites | 239 |
+| crawlanalyzer_indexing | url_inspection_results | 68,383 |
+| crawlanalyzer_indexing | url_lists | 50,603 |
+| crawlanalyzer_indexing | (5 views) | - |
+| gsc_center | collection_log | 201,211 |
+| gsc_center | gsc_data | 16,186,984 |
+| gsc_center | sites | 239 |
 
-**Migration approach:** Copy data + metadata directories
+**Store UUIDs migrated:**
+- crawlanalyzer_indexing: `90f4d398-7de2-43cd-a587-57a6acec7951`
+- gsc_center: `a24d56eb-cad6-4cf0-9eca-b17c2a4d6946`
 
 ```bash
-# On sin
-# 1. Stop ClickHouse
+# Migration commands used:
 sudo systemctl stop clickhouse-server
-
-# 2. Copy databases (data + metadata + store)
-sudo cp -a /mnt/Data/var/lib/clickhouse/data/crawlanalyzer_indexing /var/lib/clickhouse/data/
-sudo cp -a /mnt/Data/var/lib/clickhouse/data/gsc_center /var/lib/clickhouse/data/
-sudo cp -a /mnt/Data/var/lib/clickhouse/metadata/crawlanalyzer_indexing /var/lib/clickhouse/metadata/
-sudo cp -a /mnt/Data/var/lib/clickhouse/metadata/crawlanalyzer_indexing.sql /var/lib/clickhouse/metadata/
-sudo cp -a /mnt/Data/var/lib/clickhouse/metadata/gsc_center /var/lib/clickhouse/metadata/
-sudo cp -a /mnt/Data/var/lib/clickhouse/metadata/gsc_center.sql /var/lib/clickhouse/metadata/
-
-# Copy relevant store UUIDs (check metadata for UUIDs)
-# May need to copy specific store/<uuid> directories
-
-# 3. Fix ownership
+sudo cp -a /mnt/Data/var/lib/clickhouse/data/{crawlanalyzer_indexing,gsc_center} /var/lib/clickhouse/data/
+sudo cp -a /mnt/Data/var/lib/clickhouse/metadata/crawlanalyzer_indexing* /var/lib/clickhouse/metadata/
+sudo cp -a /mnt/Data/var/lib/clickhouse/metadata/gsc_center* /var/lib/clickhouse/metadata/
+sudo mkdir -p /var/lib/clickhouse/store/{90f,a24}
+sudo cp -a /mnt/Data/var/lib/clickhouse/store/90f/90f4d398-7de2-43cd-a587-57a6acec7951 /var/lib/clickhouse/store/90f/
+sudo cp -a /mnt/Data/var/lib/clickhouse/store/a24/a24d56eb-cad6-4cf0-9eca-b17c2a4d6946 /var/lib/clickhouse/store/a24/
 sudo chown -R clickhouse:clickhouse /var/lib/clickhouse/
-
-# 4. Start ClickHouse
 sudo systemctl start clickhouse-server
-
-# 5. Verify
-clickhouse-client -q "SHOW DATABASES;"
-clickhouse-client -q "SELECT database, name FROM system.tables WHERE database IN ('crawlanalyzer_indexing', 'gsc_center');"
 ```
 
 ---
