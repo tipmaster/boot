@@ -1,5 +1,31 @@
 # Changelog
 
+## 2025-12-20
+
+### MacBook (hcm) Setup Completion
+- Installed **tmux 3.6a** via Homebrew (enables t3/t6/t7 multi-pane layout aliases)
+- Installed **Worktrunk 0.5.2** via Cargo (git worktree manager for parallel AI agent workflows)
+  - Shell integration already configured in dotfiles/shell/zshrc
+  - Enables `wsc`, `ws`, `wl` aliases for worktree management
+- Configured **crontab** with correct paths for hcm:
+  - Timestamp update: `* * * * *` updates CLAUDE.MD timestamp every minute ✅ verified working
+  - Agent upgrades: commented out (upgrades.sh not yet created)
+  - Paths updated from `/Users/administrator/dev/tfwg/` to `/Users/deploy/dev/`
+
+### Verified Working on hcm
+- Dotfiles symlinks: .zshrc, .gitconfig, .tmux.conf, .ssh/config, ghostty, gh
+- Brew services: MariaDB 12.1.2, MongoDB 8.0, Redis 8.4.0
+- Version managers: mise (Node 22.21.1, Python 3.14.2), perlbrew (Perl 5.42.0)
+- AI CLI tools: Claude 2.0.73, Codex 0.75.0, Gemini 0.21.3
+- Applications: Ghostty, Brave, VS Code, Things3, Tailscale
+
+### Still Missing (minor)
+- `mosh` for `mm` alias (brew install mosh)
+- `tmuxinator` for `tx` alias (gem install tmuxinator)
+- ClickHouse CLI needs PATH fix or separate install
+- `claude-config/.env` file not created
+- `upgrades.sh` script not created
+
 ## 2025-12-17
 
 ### Cron.d Ownership Fix (sin + fue)
